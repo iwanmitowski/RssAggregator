@@ -27,6 +27,10 @@ func main() {
 		log.Fatal("PORT not found in .env")
 	}
 
+	// To apply migrations and build the queries from sql/queries
+	// open CMD in the project on sqlc.yaml level and run the following code:
+	// docker pull sqlc/sqlc
+	// docker run --rm -v "%cd%:/src" -w /src sqlc/sqlc generate
 	dbUrl := os.Getenv("DB_URL")
 
 	if dbUrl == "" {
