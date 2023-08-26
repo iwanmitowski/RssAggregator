@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/go-chi/chi"
 	"github.com/go-chi/cors"
@@ -43,8 +44,9 @@ func main() {
 		log.Fatal("Cant connect to db.")
 	}
 
+	db := database.New(conn)
 	apiCfg := apiConfig{
-		DB: database.New(conn),
+		DB: db,
 	}
 
 	router := chi.NewRouter()
@@ -76,6 +78,9 @@ func main() {
 	router.Mount("/v1", v1Router)
 
 	log.Printf("Server starting on port %v", port)
+
+	// New routine so it doesn't affect the flow
+	go startScraping(db, 10, time.Minute)
 
 	err = srv.ListenAndServe()
 
