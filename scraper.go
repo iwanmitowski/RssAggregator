@@ -2,10 +2,13 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"log"
+	"strings"
 	"sync"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/iwanmitowski/RssAggregator/internal/database"
 )
 
@@ -59,8 +62,7 @@ func scrapeFeed(
 		return
 	}
 
-	// rssFeed, err := urlToFeed(feed.Url)
-	_, err = urlToFeed(feed.Url)
+	rssFeed, err := urlToFeed(feed.Url)
 
 	if err != nil {
 		log.Printf("Error feetching feed: ", err)
@@ -68,4 +70,40 @@ func scrapeFeed(
 	}
 
 	// save to db
+	for _, item := range rssFeed.Channel.Item {
+		desciption := sql.NullString{}
+
+		if item.Description != "" {
+			desciption.String = item.Description
+			desciption.Valid = true
+		}
+
+		publishedAt, err := time.Parse(time.RFC1123Z, item.PubDate)
+
+		if err != nil {
+			log.Printf("couldn't parse date %v with err: ", item.PubDate, err)
+			continue
+		}
+
+		_, err = db.CreatePost(context.Background(), database.CreatePostParams{
+			ID:          uuid.New(),
+			CreatedAt:   time.Now().UTC(),
+			UpdatedAt:   time.Now().UTC(),
+			Title:       item.Title,
+			Description: desciption,
+			PublishedAt: publishedAt,
+			Url:         item.Link,
+			FeedID:      feed.ID,
+		})
+
+		if err != nil {
+			// Fix this
+			if strings.Contains(err.Error(), "duplicate key") {
+				continue
+			}
+			log.Printf("failed to create post: ", err)
+		}
+	}
+
+	log.Printf("Feeds %s collected, %v posts found", feed.Name, len(rssFeed.Channel.Item))
 }
