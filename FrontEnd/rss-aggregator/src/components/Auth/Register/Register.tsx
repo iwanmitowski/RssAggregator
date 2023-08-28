@@ -4,6 +4,8 @@ import { Link, useNavigate } from "react-router-dom";
 import { User } from "../../User/interfaces";
 import { CatchError } from "../../Shared/interfaces";
     
+import * as userService from "../../../services/userService";
+
 const Register: React.FC = () => {
   const navigate = useNavigate();
 
@@ -29,15 +31,15 @@ const Register: React.FC = () => {
 
   const onFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
-    // identityService
-    //   .register(user)
-    //   .then(() => {
-    //     navigate(`/`);
-    //   })
-    //   .catch((error: CatchError) => {
-    //     setError(error.message);
-    //   });
+    
+    userService
+      .register(user)
+      .then(() => {
+        navigate(`/`);
+      })
+      .catch((error: CatchError) => {
+        setError(error.message);
+      });
   };
 
   return (
