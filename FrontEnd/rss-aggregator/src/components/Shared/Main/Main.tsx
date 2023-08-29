@@ -1,10 +1,6 @@
-import { ReactNode } from "react";
+import { ChildrenProps } from "../interfaces";
 
-interface Props {
-  children: ReactNode;
-}
-
-const Main: React.FC<Props> = ({ children }) => {
+const Main: React.FC<ChildrenProps> = ({ children }) => {
   return <div>{children}</div>;
 };
 

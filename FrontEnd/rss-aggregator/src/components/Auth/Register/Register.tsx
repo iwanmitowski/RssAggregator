@@ -1,4 +1,4 @@
-import React, { Fragment, useEffect, useState } from "react";
+import React, { Fragment, useState } from "react";
 import UserForm from "../../User/UserForm";
 import { Link, useNavigate } from "react-router-dom";
 import { User } from "../../User/interfaces";
@@ -9,7 +9,7 @@ import { useUserContext } from "../../../hooks/useUserContext";
 import { UserContextType } from "../../../contexts/UserContext";
 
 const Register: React.FC = () => {
-  const { userLogin } = useUserContext() as UserContextType
+  const { userLogin } = useUserContext() as UserContextType;
   const navigate = useNavigate();
 
   const [user, setUser] = useState<User>({
