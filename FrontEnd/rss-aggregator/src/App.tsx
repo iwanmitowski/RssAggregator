@@ -5,10 +5,12 @@ import Home  from './components/Shared/Home';
 import Main from './components/Shared/Main/Main';
 import Register from './components/Auth/Register/Register';
 import NoAuthGuard from './components/Shared/Guards/NoAuthGuard';
+import Header from './components/Shared/Header/Header';
 
 function App() {
   return (
     <div className="App">
+      <Header />
       <Main>
         <Routes>
           <Route path="/" element={<Home/>} /> 
