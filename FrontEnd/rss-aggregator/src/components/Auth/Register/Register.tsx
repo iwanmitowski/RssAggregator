@@ -1,12 +1,15 @@
-import React, { Fragment, useState } from "react";
+import React, { Fragment, useEffect, useState } from "react";
 import UserForm from "../../User/UserForm";
 import { Link, useNavigate } from "react-router-dom";
 import { User } from "../../User/interfaces";
 import { CatchError } from "../../Shared/interfaces";
     
 import * as userService from "../../../services/userService";
+import { useUserContext } from "../../../hooks/useUserContext";
+import { UserContextType } from "../../../contexts/UserContext";
 
 const Register: React.FC = () => {
+  const { userLogin } = useUserContext() as UserContextType
   const navigate = useNavigate();
 
   const [user, setUser] = useState<User>({
@@ -34,7 +37,8 @@ const Register: React.FC = () => {
     
     userService
       .register(user)
-      .then(() => {
+      .then((res) => {
+        userLogin(res)
         navigate(`/`);
       })
       .catch((error: CatchError) => {
