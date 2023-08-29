@@ -6,6 +6,8 @@ import Main from './components/Shared/Main/Main';
 import Register from './components/Auth/Register/Register';
 import NoAuthGuard from './components/Shared/Guards/NoAuthGuard';
 import Header from './components/Shared/Header/Header';
+import FeedForm from './components/Feed/FeedForm';
+import AuthGuard from './components/Shared/Guards/AuthGuard';
 
 function App() {
   return (
@@ -18,6 +20,12 @@ function App() {
             <NoAuthGuard>
               <Register />
             </NoAuthGuard>
+            } 
+          />
+          <Route path="/feed" element={
+            <AuthGuard>
+              <FeedForm />
+            </AuthGuard>
             } 
           />
         </Routes>

@@ -12,10 +12,10 @@ export const instance = axios.create({
 instance.interceptors.request.use(
   (config) => {
     const auth = localStorage.getItem("auth");
-
+    debugger;
     if (!!auth) {
-      const { token } = JSON.parse(auth);
-      config.headers["Authorization"] = `ApiKey ${token}`;
+      const { api_key } = JSON.parse(auth);
+      config.headers["Authorization"] = `ApiKey ${api_key}`;
     }
 
     return config;
