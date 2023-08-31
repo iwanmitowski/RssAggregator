@@ -36,9 +36,20 @@ func (apiCfg *apiConfig) handlerCreateFeed(w http.ResponseWriter, r *http.Reques
 	})
 
 	if err != nil {
-		respondWithError(w, 400, fmt.Sprintf("Couldnt create user: ", err))
+		respondWithError(w, 400, fmt.Sprintf("Couldnt create feed: ", err))
 		return
 	}
 
 	respondWithJSON(w, 201, toFeed(feed))
+}
+
+func (apiCfg *apiConfig) handlerGetNotFollowedFeeds(w http.ResponseWriter, r *http.Request, user database.User) {
+	feeds, err := apiCfg.DB.GetNotFollowedFeeds(r.Context(), user.ID)
+
+	if err != nil {
+		respondWithError(w, 400, fmt.Sprintf("Failed to fetch feeds: ", err))
+		return
+	}
+
+	respondWithJSON(w, 201, toFeeds(feeds))
 }

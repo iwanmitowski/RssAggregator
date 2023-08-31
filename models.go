@@ -45,6 +45,16 @@ func toFeed(source database.Feed) Feed {
 	}
 }
 
+func toFeeds(source []database.Feed) []Feed {
+	result := []Feed{}
+
+	for _, feed := range source {
+		result = append(result, toFeed(feed))
+	}
+
+	return result
+}
+
 type FeedFollow struct {
 	ID        uuid.UUID `json:"id"`
 	CreatedAt time.Time `json:"created_at"`
