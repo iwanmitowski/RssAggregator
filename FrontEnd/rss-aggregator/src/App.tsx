@@ -8,6 +8,7 @@ import NoAuthGuard from './components/Shared/Guards/NoAuthGuard';
 import Header from './components/Shared/Header/Header';
 import FeedForm from './components/Feed/FeedForm';
 import AuthGuard from './components/Shared/Guards/AuthGuard';
+import FeedList from './components/Feed/FeedList';
 
 function App() {
   return (
@@ -25,6 +26,18 @@ function App() {
           <Route path="/feed" element={
             <AuthGuard>
               <FeedForm />
+            </AuthGuard>
+            } 
+          />
+          <Route path="/feeds" element={
+            <AuthGuard>
+              <FeedList followed={false}/>
+            </AuthGuard>
+            } 
+          />
+          <Route path="/feeds/followed" element={
+            <AuthGuard>
+              <FeedList followed={true}/>
             </AuthGuard>
             } 
           />
