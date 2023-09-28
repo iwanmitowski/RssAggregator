@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"log"
 	"net/http"
@@ -11,12 +12,26 @@ import (
 	"github.com/go-chi/cors"
 	"github.com/iwanmitowski/RssAggregator/internal/database"
 	"github.com/joho/godotenv"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 
 	_ "github.com/lib/pq"
 )
 
 type apiConfig struct {
-	DB *database.Queries
+	DB Database
+}
+
+type Database interface {
+	// Define the methods you need for your application
+}
+
+type PostGresDBClient struct {
+	*database.Queries
+}
+
+type MongoDBClient struct {
+	*mongo.Client
 }
 
 func main() {
@@ -35,16 +50,36 @@ func main() {
 	dbUrl := os.Getenv("DB_URL")
 
 	if dbUrl == "" {
+		log.Printf("DB_URL for Postgres not found in .env")
+	}
+
+	dbUrl = os.Getenv("DB_URL_MONGO")
+	isMongo := false
+
+	if dbUrl == "" {
 		log.Fatal("DB_URL not found in .env")
+	} else {
+		isMongo = true
 	}
 
-	conn, err := sql.Open("postgres", dbUrl)
-
-	if err != nil {
-		log.Fatal("Cant connect to db.")
+	var db interface{}
+	if isMongo {
+		mongoClient := connectToMongo(dbUrl)
+		defer func() {
+			if mongoClient != nil {
+				mongoClient.Disconnect(nil)
+			}
+		}()
+		db = mongoClient
+	} else {
+		// Use your SQL database connection here
+		conn, err := sql.Open("postgres", dbUrl)
+		if err != nil {
+			log.Fatal("Can't connect to db.")
+		}
+		db = &PostGresDBClient{Queries: database.New(conn)}
 	}
 
-	db := database.New(conn)
 	apiCfg := apiConfig{
 		DB: db,
 	}
@@ -82,11 +117,30 @@ func main() {
 	log.Printf("Server starting on port %v", port)
 
 	// New routine so it doesn't affect the flow
-	go startScraping(db, 10, time.Minute)
 
-	err = srv.ListenAndServe()
+	go startScraping(apiCfg.DB, 10, time.Minute)
+
+	err := srv.ListenAndServe()
 
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+func connectToMongo(dbURLMongo string) *MongoDBClient {
+	clientOptions := options.Client().ApplyURI(dbURLMongo)
+	client, err := mongo.NewClient(clientOptions)
+	if err != nil {
+		log.Fatalf("Error creating MongoDB client: %v", err)
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	err = client.Connect(ctx)
+	if err != nil {
+		log.Fatalf("Error connecting to MongoDB: %v", err)
+	}
+
+	return &MongoDBClient{Client: client}
 }
