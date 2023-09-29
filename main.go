@@ -19,19 +19,7 @@ import (
 )
 
 type apiConfig struct {
-	DB Database
-}
-
-type Database interface {
-	// Define the methods you need for your application
-}
-
-type PostGresDBClient struct {
-	*database.Queries
-}
-
-type MongoDBClient struct {
-	*mongo.Client
+	DB database.Database
 }
 
 func main() {
@@ -62,26 +50,26 @@ func main() {
 		isMongo = true
 	}
 
-	var db interface{}
+	var apiCfg apiConfig
 	if isMongo {
+		// Dont forget to create database: rssagg and collections: feed_follows, feeds, posts, users
 		mongoClient := connectToMongo(dbUrl)
 		defer func() {
 			if mongoClient != nil {
 				mongoClient.Disconnect(nil)
 			}
 		}()
-		db = mongoClient
+		apiCfg = apiConfig{
+			DB: mongoClient,
+		}
 	} else {
-		// Use your SQL database connection here
 		conn, err := sql.Open("postgres", dbUrl)
 		if err != nil {
 			log.Fatal("Can't connect to db.")
 		}
-		db = &PostGresDBClient{Queries: database.New(conn)}
-	}
-
-	apiCfg := apiConfig{
-		DB: db,
+		apiCfg = apiConfig{
+			DB: &database.PostGresDBClient{Queries: database.New(conn)},
+		}
 	}
 
 	router := chi.NewRouter()
@@ -127,7 +115,7 @@ func main() {
 	}
 }
 
-func connectToMongo(dbURLMongo string) *MongoDBClient {
+func connectToMongo(dbURLMongo string) *database.MongoDBClient {
 	clientOptions := options.Client().ApplyURI(dbURLMongo)
 	client, err := mongo.NewClient(clientOptions)
 	if err != nil {
@@ -142,5 +130,5 @@ func connectToMongo(dbURLMongo string) *MongoDBClient {
 		log.Fatalf("Error connecting to MongoDB: %v", err)
 	}
 
-	return &MongoDBClient{Client: client}
+	return &database.MongoDBClient{Client: client}
 }
