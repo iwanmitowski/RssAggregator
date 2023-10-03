@@ -40,7 +40,7 @@ func (apiCfg *apiConfig) handlerCreateFeed(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	respondWithJSON(w, 201, toFeed(feed))
+	respondWithJSON(w, 201, database.ToFeedDto(feed))
 }
 
 func (apiCfg *apiConfig) handlerGetNotFollowedFeeds(w http.ResponseWriter, r *http.Request, user database.User) {
@@ -51,5 +51,5 @@ func (apiCfg *apiConfig) handlerGetNotFollowedFeeds(w http.ResponseWriter, r *ht
 		return
 	}
 
-	respondWithJSON(w, 201, toFeeds(feeds))
+	respondWithJSON(w, 201, database.ToFeedDtos(feeds))
 }

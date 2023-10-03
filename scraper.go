@@ -13,7 +13,7 @@ import (
 )
 
 func startScraping(
-	db *database.Queries,
+	db database.Database,
 	concurrency int,
 	timeBetweenRequest time.Duration,
 ) {
@@ -50,7 +50,7 @@ func startScraping(
 }
 
 func scrapeFeed(
-	db *database.Queries,
+	db database.Database,
 	waitGroup *sync.WaitGroup,
 	feed database.Feed) {
 	defer waitGroup.Done() // Decrements counter by 1

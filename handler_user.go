@@ -37,11 +37,11 @@ func (apiCfg *apiConfig) handlerCreateUser(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	respondWithJSON(w, 201, toUser(user))
+	respondWithJSON(w, 201, database.ToUserDto(user))
 }
 
 func (apiCfg *apiConfig) handlerGetUser(w http.ResponseWriter, r *http.Request, user database.User) {
-	respondWithJSON(w, 200, toUser(user))
+	respondWithJSON(w, 200, database.ToUserDto(user))
 }
 
 func (apiCfg *apiConfig) handlerGetPostsForUser(w http.ResponseWriter, r *http.Request, user database.User) {
@@ -55,5 +55,5 @@ func (apiCfg *apiConfig) handlerGetPostsForUser(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	respondWithJSON(w, 200, toPosts(posts))
+	respondWithJSON(w, 200, database.ToPostDtos(posts))
 }

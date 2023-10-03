@@ -13,7 +13,7 @@ import (
 
 func (apiCfg *apiConfig) handlerCreateFeedFollow(w http.ResponseWriter, r *http.Request, user database.User) {
 	type parameters struct {
-		FeedID uuid.UUID `json:"feed_id"`
+		FeedID uuid.UUID `json:"feed_id" bson:"feedid"`
 	}
 
 	params := parameters{}
@@ -39,7 +39,7 @@ func (apiCfg *apiConfig) handlerCreateFeedFollow(w http.ResponseWriter, r *http.
 		return
 	}
 
-	respondWithJSON(w, 201, toFeedFollow(feedFollow))
+	respondWithJSON(w, 201, database.ToFeedFollowDto(feedFollow))
 }
 
 func (apiCfg *apiConfig) handlerGetFeedFollows(w http.ResponseWriter, r *http.Request, user database.User) {
@@ -51,7 +51,7 @@ func (apiCfg *apiConfig) handlerGetFeedFollows(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	respondWithJSON(w, 201, toFeedFollows(feedFollows))
+	respondWithJSON(w, 201, database.ToFeedFollowDtos(feedFollows))
 }
 
 func (apiCfg *apiConfig) handlerUnfollowFeed(w http.ResponseWriter, r *http.Request, user database.User) {
