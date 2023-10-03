@@ -13,7 +13,25 @@ func (c *MongoDBClient) CreateFeed(ctx context.Context, arg CreateFeedParams) (F
 	db := c.Database("rssagg")
 	collection := db.Collection("feeds")
 
-	_, err := collection.InsertOne(ctx, arg)
+	obj := struct {
+		ID              uuid.UUID
+		CreatedAt       time.Time
+		UpdatedAt       time.Time
+		Name            string
+		Url             string
+		UserID          uuid.UUID
+		Last_fetched_at *time.Time
+	}{
+		ID:              arg.ID,
+		CreatedAt:       arg.CreatedAt,
+		UpdatedAt:       arg.UpdatedAt,
+		Name:            arg.Name,
+		Url:             arg.Url,
+		UserID:          arg.UserID,
+		Last_fetched_at: nil,
+	}
+
+	_, err := collection.InsertOne(ctx, obj)
 	var result Feed
 	if err != nil {
 		return result, err
@@ -30,12 +48,13 @@ func (c *MongoDBClient) GetNextFeedsToFetch(ctx context.Context, limit int32) ([
 
 	findOptions := options.Find().SetSort(map[string]int{"last_fetched_at": 1}).SetLimit(int64(limit))
 
-	feedsCursor, err := collection.Find(ctx, nil, findOptions)
+	feedsCursor, err := collection.Find(ctx, bson.M{}, findOptions)
 
 	var result []Feed
 	if err != nil {
 		return result, err
 	}
+	defer feedsCursor.Close(ctx)
 
 	for feedsCursor.Next(ctx) {
 		var feed Feed
@@ -71,7 +90,7 @@ func (c *MongoDBClient) MarkFeedFetched(ctx context.Context, id uuid.UUID) (Feed
 
 func (c *MongoDBClient) GetNotFollowedFeeds(ctx context.Context, userID uuid.UUID) ([]Feed, error) {
 	db := c.Database("rssagg")
-	
+
 	feedFollowsCollection := db.Collection("feed_follows")
 	feedIdsFollowedByUserCursor, err := feedFollowsCollection.Find(ctx, bson.M{"user_id": userID})
 	if err != nil {
@@ -87,12 +106,15 @@ func (c *MongoDBClient) GetNotFollowedFeeds(ctx context.Context, userID uuid.UUI
 		}
 		feedIdsFollowedByUser = append(feedIdsFollowedByUser, feedFollow.FeedID)
 	}
+	feedIdsFolloedByUserArray := make([]uuid.UUID, len(feedIdsFollowedByUser))
+	copy(feedIdsFolloedByUserArray, feedIdsFollowedByUser)
 
 	feedsCollection := db.Collection("feeds")
-	feedsNotFollowedByUserCursor, err := feedsCollection.Find(ctx, bson.M{"_id": bson.M{"$nin": feedIdsFollowedByUser}})
+	feedsNotFollowedByUserCursor, err := feedsCollection.Find(ctx, bson.M{"id": bson.M{"$nin": feedIdsFolloedByUserArray}})
 	if err != nil {
 		return nil, err
 	}
+
 	defer feedsNotFollowedByUserCursor.Close(ctx)
 
 	var result []Feed

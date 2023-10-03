@@ -1,13 +1,12 @@
-package main
+package database
 
 import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/iwanmitowski/RssAggregator/internal/database"
 )
 
-type User struct {
+type UserDto struct {
 	ID        uuid.UUID `json:"id"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
@@ -15,8 +14,8 @@ type User struct {
 	APIKey    string    `json:"api_key"`
 }
 
-func toUser(source database.User) User {
-	return User{
+func ToUserDto(source User) UserDto {
+	return UserDto{
 		ID:        source.ID,
 		CreatedAt: source.CreatedAt,
 		UpdatedAt: source.UpdatedAt,
@@ -25,7 +24,7 @@ func toUser(source database.User) User {
 	}
 }
 
-type Feed struct {
+type FeedDto struct {
 	ID        uuid.UUID `json:"id"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
@@ -34,8 +33,8 @@ type Feed struct {
 	UserID    uuid.UUID `json:"user_id"`
 }
 
-func toFeed(source database.Feed) Feed {
-	return Feed{
+func ToFeedDto(source Feed) FeedDto {
+	return FeedDto{
 		ID:        source.ID,
 		CreatedAt: source.CreatedAt,
 		UpdatedAt: source.UpdatedAt,
@@ -45,26 +44,26 @@ func toFeed(source database.Feed) Feed {
 	}
 }
 
-func toFeeds(source []database.Feed) []Feed {
-	result := []Feed{}
+func ToFeedDtos(source []Feed) []FeedDto {
+	result := []FeedDto{}
 
-	for _, feed := range source {
-		result = append(result, toFeed(feed))
+	for _, feedDto := range source {
+		result = append(result, ToFeedDto(feedDto))
 	}
 
 	return result
 }
 
-type FeedFollow struct {
+type FeedFollowDto struct {
 	ID        uuid.UUID `json:"id"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 	UserID    uuid.UUID `json:"user_id"`
-	FeedID    uuid.UUID `json:"feed_id"`
+	FeedID    uuid.UUID `json:"feed_id" bson:"feedid"`
 }
 
-func toFeedFollow(source database.FeedFollow) FeedFollow {
-	return FeedFollow{
+func ToFeedFollowDto(source FeedFollow) FeedFollowDto {
+	return FeedFollowDto{
 		ID:        source.ID,
 		CreatedAt: source.CreatedAt,
 		UpdatedAt: source.UpdatedAt,
@@ -73,17 +72,17 @@ func toFeedFollow(source database.FeedFollow) FeedFollow {
 	}
 }
 
-func toFeedFollows(source []database.FeedFollow) []FeedFollow {
-	result := []FeedFollow{}
+func ToFeedFollowDtos(source []FeedFollow) []FeedFollowDto {
+	result := []FeedFollowDto{}
 
-	for _, feedFollow := range source {
-		result = append(result, toFeedFollow(feedFollow))
+	for _, feedFollowDto := range source {
+		result = append(result, ToFeedFollowDto(feedFollowDto))
 	}
 
 	return result
 }
 
-type Post struct {
+type PostDto struct {
 	ID          uuid.UUID `json:"id"`
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
@@ -94,14 +93,14 @@ type Post struct {
 	FeedID      uuid.UUID `json:"feed_id"`
 }
 
-func toPost(source database.Post) Post {
+func ToPostDto(source Post) PostDto {
 	var description *string
 
 	if source.Description.Valid {
 		description = &source.Description.String
 	}
 
-	return Post{
+	return PostDto{
 		ID:          source.ID,
 		CreatedAt:   source.CreatedAt,
 		UpdatedAt:   source.UpdatedAt,
@@ -113,11 +112,11 @@ func toPost(source database.Post) Post {
 	}
 }
 
-func toPosts(source []database.Post) []Post {
-	result := []Post{}
+func ToPostDtos(source []Post) []PostDto {
+	result := []PostDto{}
 
-	for _, post := range source {
-		result = append(result, toPost(post))
+	for _, postDto := range source {
+		result = append(result, ToPostDto(postDto))
 	}
 
 	return result

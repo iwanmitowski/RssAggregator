@@ -27,9 +27,9 @@ func (c *MongoDBClient) UnfollowFeed(ctx context.Context, arg UnfollowFeedParams
 
 	feedFollowsCollection := db.Collection("feed_follows")
 
-	_, err := feedFollowsCollection.DeleteOne(ctx,  bson.M{
-		"id":     arg.ID, 
-		"user_id": arg.UserID,
+	_, err := feedFollowsCollection.DeleteOne(ctx, bson.M{
+		"id":     arg.ID,
+		"userid": arg.UserID,
 	})
 
 	if err != nil {
@@ -41,9 +41,9 @@ func (c *MongoDBClient) UnfollowFeed(ctx context.Context, arg UnfollowFeedParams
 
 func (c *MongoDBClient) GetFeedFollows(ctx context.Context, userID uuid.UUID) ([]FeedFollow, error) {
 	db := c.Database("rssagg")
-	collection := db.Collection("feeds")
+	collection := db.Collection("feed_follows")
 
-	feedsCursor, err := collection.Find(ctx, bson.M{"user_id": userID})
+	feedsCursor, err := collection.Find(ctx, bson.M{"userid": userID})
 
 	var result []FeedFollow
 	if err != nil {
@@ -55,7 +55,13 @@ func (c *MongoDBClient) GetFeedFollows(ctx context.Context, userID uuid.UUID) ([
 		if err := feedsCursor.Decode(&feedFollow); err != nil {
 			return result, err
 		}
-		result = append(result, feedFollow)
+		result = append(result, FeedFollow{
+			ID:        feedFollow.ID,
+			CreatedAt: feedFollow.CreatedAt,
+			UpdatedAt: feedFollow.UpdatedAt,
+			UserID:    feedFollow.UserID,
+			FeedID:    feedFollow.FeedID,
+		})
 	}
 
 	return result, nil

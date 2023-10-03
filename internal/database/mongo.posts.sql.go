@@ -26,7 +26,7 @@ func (c *MongoDBClient) GetPostsForUser(ctx context.Context, arg GetPostsForUser
 	db := c.Database("rssagg")
 
 	feedFollowsCollection := db.Collection("feed_follows")
-	feedFollowsCursor, err := feedFollowsCollection.Find(ctx, bson.M{"user_id": arg.UserID})
+	feedFollowsCursor, err := feedFollowsCollection.Find(ctx, bson.M{"userid": arg.UserID})
 
 	var result []Post
 	var feedFollows []FeedFollow
@@ -37,7 +37,7 @@ func (c *MongoDBClient) GetPostsForUser(ctx context.Context, arg GetPostsForUser
 
 	for feedFollowsCursor.Next(ctx) {
 		var feedFollow FeedFollow
-		if err := feedFollowsCursor.Decode(&feedFollows); err != nil {
+		if err := feedFollowsCursor.Decode(&feedFollow); err != nil {
 			continue
 		}
 		feedFollows = append(feedFollows, feedFollow)
@@ -53,7 +53,7 @@ func (c *MongoDBClient) GetPostsForUser(ctx context.Context, arg GetPostsForUser
 	}
 
 	postsCollection := db.Collection("posts")
-	postsCursor, err := postsCollection.Find(ctx, bson.M{"feed_id": bson.M{"$in": followedFeedIds}})
+	postsCursor, err := postsCollection.Find(ctx, bson.M{"feedid": bson.M{"$in": followedFeedIds}})
 
 	if err != nil {
 		return result, err
@@ -61,7 +61,7 @@ func (c *MongoDBClient) GetPostsForUser(ctx context.Context, arg GetPostsForUser
 
 	for postsCursor.Next(ctx) {
 		var post Post
-		if err := postsCursor.Decode(&feedFollows); err != nil {
+		if err := postsCursor.Decode(&post); err != nil {
 			continue
 		}
 		result = append(result, post)
